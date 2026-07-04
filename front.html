@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Moje Knjige</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        input, select { width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
+        button { padding: 10px 20px; background: #0070c2; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 4px; }
+        button:hover { background: #005fa3; }
+        .knjiga { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .ocena { font-size: 20px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1></h1> Knjige</h1>
+
+    <h2>Dodaj knjigu</h2>
+    <input id="naslov" placeholder="Naslov knjige">
+    <input id="autor" placeholder="Autor">
+    <select id="ocena">
+        <option value="1">⭐ 1</option>
+        <option value="2">⭐⭐ 2</option>
+        <option value="3">⭐⭐⭐ 3</option>
+        <option value="4">⭐⭐⭐⭐ 4</option>
+        <option value="5">⭐⭐⭐⭐⭐ 5</option>
+    </select>
+    <button onclick="dodajKnjigu()">Dodaj</button>
+    <p id="greska" class="error"></p>
+
+    <h2>Sve knjige</h2>
+    <button onclick="ucitajKnjige()"> Refresh</button>
+    <div id="lista-knjiga"></div>
+
+    <script>
+        const API = "http://localhost:8000";
+
+        async function dodajKnjigu() {
+            const naslov=document.getElementById("naslov").value;
+            const autor=document.getElementById("autor").value;
+            const ocena=parseInt(document.getElementById("ocena").value);
+
+            if (!naslov || !autor) {
+                document.getElementById("greska").textContent = "Unesi naslov i autora!";
+                return;
+            }
+
+            const response = await fetch(`${API}/dodaj-knjigu`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ naslov, autor, ocena })
+            });
+
+            const data = await response.json();
+            document.getElementById("greska").textContent = "";
+            document.getElementById("naslov").value = "";
+            document.getElementById("autor").value = "";
+            ucitajKnjige();
+        }
+
+        async function ucitajKnjige() {
+            const response = await fetch(`${API}/knjige`);
+            const data = await response.json();
+
+            const lista = document.getElementById("lista-knjiga");
+            lista.innerHTML = "";
+
+            for (const [id, knjiga] of Object.entries(data)) {
+                const zvjezdice = "⭐".repeat(knjiga.ocena);
+                lista.innerHTML += `
+                    <div class="knjiga">
+                        <div>
+                            <strong>${knjiga.naslov}</strong> — ${knjiga.autor}
+                            <div class="ocjena">${zvjezdice}</div>
+                        </div>
+                        <button onclick="obrisi(${id})">🗑️ Obriši</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function obrisi(id) {
+            await fetch(`${API}/obrisi/${id}`, { method: "DELETE" });
+            ucitajKnjige();
+        }
+
+        ucitajKnjige();
+    </script>
+</body>
+</html>
