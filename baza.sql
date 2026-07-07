@@ -1,0 +1,6 @@
+CREATE TABLE knjige (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    naslov TEXT NOT NULL,
+    autor TEXT NOT NULL,
+    ocena INTEGER NOT NULL
+);

@@ -20,32 +20,28 @@
     <input id="naslov" placeholder="Naslov knjige">
     <input id="autor" placeholder="Autor">
     <select id="ocena">
-        <option value="1">⭐ 1</option>
-        <option value="2">⭐⭐ 2</option>
-        <option value="3">⭐⭐⭐ 3</option>
-        <option value="4">⭐⭐⭐⭐ 4</option>
-        <option value="5">⭐⭐⭐⭐⭐ 5</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
     </select>
     <button onclick="dodajKnjigu()">Dodaj</button>
     <p id="greska" class="error"></p>
-
     <h2>Sve knjige</h2>
     <button onclick="ucitajKnjige()"> Refresh</button>
     <div id="lista-knjiga"></div>
 
     <script>
         const API = "http://localhost:8000";
-
         async function dodajKnjigu() {
             const naslov=document.getElementById("naslov").value;
             const autor=document.getElementById("autor").value;
             const ocena=parseInt(document.getElementById("ocena").value);
-
             if (!naslov || !autor) {
                 document.getElementById("greska").textContent = "Unesi naslov i autora!";
                 return;
             }
-
             const response = await fetch(`${API}/dodaj-knjigu`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -59,32 +55,32 @@
             ucitajKnjige();
         }
 
-        async function ucitajKnjige() {
-            const response = await fetch(`${API}/knjige`);
-            const data = await response.json();
-
-            const lista = document.getElementById("lista-knjiga");
-            lista.innerHTML = "";
-
-            for (const [id, knjiga] of Object.entries(data)) {
-                const zvjezdice = "⭐".repeat(knjiga.ocena);
-                lista.innerHTML += `
-                    <div class="knjiga">
-                        <div>
-                            <strong>${knjiga.naslov}</strong> — ${knjiga.autor}
-                            <div class="ocjena">${zvjezdice}</div>
-                        </div>
-                        <button onclick="obrisi(${id})">🗑️ Obriši</button>
-                    </div>
-                `;
-            }
-        }
-
+    async function ucitajKnjige() {
+    const response = await fetch(`${API}/knjige`);
+    const data = await response.json();
+    const lista = document.getElementById("lista-knjiga");
+    lista.innerHTML = "";
+    for (const [id, knjiga] of Object.entries(data)) {
+        const div = document.createElement("div");
+        div.className = "knjiga";
+        const info = document.createElement("div");
+        info.innerHTML = `<strong>${knjiga.naslov}</strong> — ${knjiga.autor}`;
+        const ocena = document.createElement("div");
+        ocena.className = "ocena";
+        ocena.textContent = "⭐".repeat(knjiga.ocena);
+        const dugme = document.createElement("button");
+        dugme.textContent = "Obriši";
+        dugme.onclick = () => obrisi(id);
+        info.appendChild(ocena);
+        div.appendChild(info);
+        div.appendChild(dugme);
+        lista.appendChild(div);
+    }
+}
         async function obrisi(id) {
             await fetch(`${API}/obrisi/${id}`, { method: "DELETE" });
             ucitajKnjige();
         }
-
         ucitajKnjige();
     </script>
 </body>
